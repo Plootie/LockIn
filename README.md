@@ -6,6 +6,9 @@ This is mainly for players using borderless windowed mode who want to prevent ac
 Simply launch `LockIn.exe`, Click the red button and launch helldivers (Does not need to be in that order)<br><br>
 <img src="Images/readme1.png"/>
 
+# Troubleshooting
+Launching LockIn and nothing is happening? Try grabbing the [.NET 9 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+
 ## Disclaimer
 
 This is a small, personal project that I wrote for myself and have decided to release to help others with the same problem.<br>
