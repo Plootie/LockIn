@@ -3,7 +3,8 @@ Lock In is a small little tool that locks your cursor to Helldivers 2's window w
 This is mainly for players using borderless windowed mode who want to prevent accidentally clicking outside the game window while they're playing
 
 # How to use
-Simply launch `LockIn.exe`, Click the red button and launch helldivers (Does not need to be in that order)
+Simply launch `LockIn.exe`, Click the red button and launch helldivers (Does not need to be in that order)<br><br>
+<img src="Images/readme1.png"/>
 
 ## Disclaimer
 
