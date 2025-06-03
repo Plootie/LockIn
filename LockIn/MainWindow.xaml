@@ -1,0 +1,40 @@
+﻿<Window x:Class="LockIn.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LockIn"
+        xmlns:vm="clr-namespace:LockIn.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel, IsDesignTimeCreatable=True}"
+        Title="Lock In" Height="300" Width="300">
+    <Grid Background="#151515">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Grid.Row="0" Text="Helldivers 2 | Lock In"
+                   FontFamily="pack://application:,,,/Assets/#FS Sinclair" FontSize="26"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   FontWeight="Bold"
+                   Margin="10,5,0,0" Foreground="{DynamicResource SilverForeground}"/>
+        
+        <TextBlock Grid.Row="1" Text="{Binding StatusText}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                   FontFamily="pack://application:,,,/Assets/#FS Sinclair" FontSize="20" FontWeight="Bold"
+                   Foreground="{DynamicResource SilverForeground}"/>
+        
+        <Border Grid.Row="2" CornerRadius="1" BorderThickness="2" BorderBrush="#e0e0e0" VerticalAlignment="Bottom" Height="80" Width="50" Margin="0 0 0 5">
+            <ToggleButton Style="{DynamicResource HelldiverToggleButtonStyle}" IsChecked="{Binding IsLockEnabled}"/>
+        </Border>
+        
+        <TextBlock Grid.Row="3" Text="{Binding LockInText}"
+                   FontFamily="pack://application:,,,/Assets/#FS Sinclair" FontSize="14" FontWeight="Bold"
+                   Foreground="#e0e0e0"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Top"/>
+        
+    </Grid>
+</Window>
