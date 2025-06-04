@@ -42,7 +42,7 @@ jobs:
       run: dotnet build ${{ env.Project_Path }}
          --configuration ${{ matrix.configuration }}
          --no-restore
-         --runtime win-x64
+         --runtime net9.0-windows
          /p:EnableWindowsTargeting=true
          /p:SelfContained=true
 
@@ -51,7 +51,7 @@ jobs:
         --configuration ${{ matrix.configuration }}
         --no-restore
         --no-build
-        --runtime win-x64
+        --runtime net9.0-windows
         --property:PublishDir=${{ env.Publish_Path }}
         /p:EnableWindowsTargeting=true
         /p:SelfContained=true
