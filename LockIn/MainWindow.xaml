@@ -3,11 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:LockIn"
         xmlns:vm="clr-namespace:LockIn.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel, IsDesignTimeCreatable=True}"
-        Title="Lock In" Height="300" Width="300">
+        Title="Lock In" Height="275" Width="300">
+    
     <Grid Background="#151515">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -17,24 +17,69 @@
         </Grid.RowDefinitions>
         
         <TextBlock Grid.Row="0" Text="Helldivers 2 | Lock In"
-                   FontFamily="pack://application:,,,/Assets/#FS Sinclair" FontSize="26"
+                   FontSize="26" FontWeight="Bold"
                    HorizontalAlignment="Center" VerticalAlignment="Center"
-                   FontWeight="Bold"
-                   Margin="10,5,0,0" Foreground="{DynamicResource SilverForeground}"/>
+                   Margin="10,5,0,0">
+            
+            <TextBlock.FontFamily>
+                <StaticResource ResourceKey="FSSinclair"/>
+            </TextBlock.FontFamily>
+            
+            <TextBlock.Foreground>
+                <StaticResource ResourceKey="SilverForeground"/>
+            </TextBlock.Foreground>
+        </TextBlock>
         
-        <TextBlock Grid.Row="1" Text="{Binding StatusText}" HorizontalAlignment="Center" VerticalAlignment="Center"
-                   FontFamily="pack://application:,,,/Assets/#FS Sinclair" FontSize="20" FontWeight="Bold"
-                   Foreground="{DynamicResource SilverForeground}"/>
+        <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                   FontSize="20" FontWeight="Bold">
+            <TextBlock.Text>
+                <Binding Path="StatusText" Mode="OneWay"/>
+            </TextBlock.Text>
+            
+            <TextBlock.FontFamily>
+                <StaticResource ResourceKey="FSSinclair"/>
+            </TextBlock.FontFamily>
+            
+            <TextBlock.Foreground>
+                <StaticResource ResourceKey="SilverForeground"/>
+            </TextBlock.Foreground>
+        </TextBlock>
         
-        <Border Grid.Row="2" CornerRadius="1" BorderThickness="2" BorderBrush="#e0e0e0" VerticalAlignment="Bottom" Height="80" Width="50" Margin="0 0 0 5">
-            <ToggleButton Style="{DynamicResource HelldiverToggleButtonStyle}" IsChecked="{Binding IsLockEnabled}"/>
+        <Border Grid.Row="2" CornerRadius="1" BorderThickness="2"
+                VerticalAlignment="Bottom" Height="80" Width="50" Margin="0 0 0 5">
+            <Border.BorderBrush>
+                <StaticResource ResourceKey="WhiteForeground"/>
+            </Border.BorderBrush>
+            
+            <ToggleButton>
+                <ToggleButton.Style>
+                    <StaticResource ResourceKey="HelldiverToggleButtonStyle"/>
+                </ToggleButton.Style>
+                
+                <ToggleButton.IsChecked>
+                    <Binding Path="IsLockEnabled" Mode="OneWayToSource"/>
+                </ToggleButton.IsChecked>
+            </ToggleButton>
         </Border>
         
-        <TextBlock Grid.Row="3" Text="{Binding LockInText}"
-                   FontFamily="pack://application:,,,/Assets/#FS Sinclair" FontSize="14" FontWeight="Bold"
-                   Foreground="#e0e0e0"
+        <TextBlock Grid.Row="3"
+                   FontSize="14"
+                   FontWeight="Bold"
                    HorizontalAlignment="Center"
-                   VerticalAlignment="Top"/>
+                   VerticalAlignment="Top">
+            
+            <TextBlock.Text>
+                <Binding Path="LockInText" Mode="OneWay"/>    
+            </TextBlock.Text>
+            
+            <TextBlock.Foreground>
+                <StaticResource ResourceKey="WhiteForeground"/>
+            </TextBlock.Foreground>
+            
+            <TextBlock.FontFamily>
+                <StaticResource ResourceKey="FSSinclair"/>
+            </TextBlock.FontFamily>
+        </TextBlock>
         
     </Grid>
 </Window>
