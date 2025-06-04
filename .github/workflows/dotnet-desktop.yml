@@ -48,7 +48,7 @@ jobs:
         --configuration ${{ matrix.configuration }}
         --no-restore
         --no-build
-        --property:PublishDir=${{ env.PUBLISH_DIR }}
+        --property:PublishDir=${{ env.Output_Path }}
 
    
     # Upload the artifact
