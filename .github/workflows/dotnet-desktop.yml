@@ -42,6 +42,7 @@ jobs:
       run: dotnet build ${{ env.Solution_Name }}
          --configuration ${{ matrix.configuration }}
          --no-restore
+         --property:EnableWindowsTargeting=true
 
     - name: Publish
       run: dotnet publish ${{ env.Project_Name }}
@@ -49,6 +50,7 @@ jobs:
         --no-restore
         --no-build
         --property:PublishDir=${{ env.Output_Path }}
+        --property:EnableWindowsTargeting=true
 
    
     # Upload the artifact
