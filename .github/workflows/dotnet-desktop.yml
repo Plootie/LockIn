@@ -36,10 +36,10 @@ jobs:
         dotnet-version: 9.0.x
         
     - name: Restore the solution
-      run: dotnet restore ${{ env.Solution_Name }} /p:EnableWindowsTargeting=true
+      run: dotnet restore ${{ env.Project_Path }} /p:EnableWindowsTargeting=true
 
     - name: Build the solution
-      run: dotnet build ${{ env.Solution_Name }}
+      run: dotnet build ${{ env.Project_Path }}
          --configuration ${{ matrix.configuration }}
          --no-restore
          --runtime win-x64
@@ -47,7 +47,7 @@ jobs:
          /p:SelfContained=true
 
     - name: Publish
-      run: dotnet publish ${{ env.Project_Name }}
+      run: dotnet publish ${{ env.Project_Path }}
         --configuration ${{ matrix.configuration }}
         --no-restore
         --no-build
