@@ -20,7 +20,7 @@ jobs:
     env:
       Solution_Name: LockIn.sln
       Project_Path: LockIn/LockIn.csproj
-      Publish_Path: Output/
+      Publish_Path: ${{ github.workspace }}/publish
       
 
     steps:
