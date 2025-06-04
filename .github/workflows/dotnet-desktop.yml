@@ -49,7 +49,7 @@ jobs:
         --configuration ${{ matrix.configuration }}
         --no-restore
         --no-build
-        --property:PublishDir=${{ env.Output_Path }}
+        --property:PublishDir=${{ env.Publish_Path }}
         /p:EnableWindowsTargeting=true
 
    
@@ -58,4 +58,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: x64
-        path: ${{ env.Output_Path }}
+        path: ${{ env.Publish_Path }}
