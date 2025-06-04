@@ -61,3 +61,28 @@ jobs:
       with:
         name: x64
         path: ${{ env.Publish_Path }}
+
+  release:
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: win-x64
+          path: win_extracted
+  
+      - name: Zip Windows Artifact
+        run: |
+          cd win_extracted
+          zip -r ../win-x64.zip *
+          cd ..
+                              
+      - name: Generate Release Draft
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          files: win-x64.zip
