@@ -3,6 +3,7 @@
     
     <SolidColorBrush x:Key="SilverForeground" Color="#C0C4D2"/>
     <SolidColorBrush x:Key="WhiteForeground" Color="#e0e0e0"/>
+    <SolidColorBrush x:Key="BlackBackground" Color="#151515"/>
     <FontFamily x:Key="FSSinclair" >/Assets/#FS Sinclair Regular.otf</FontFamily>
 
 </ResourceDictionary>

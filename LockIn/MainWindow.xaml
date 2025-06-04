@@ -8,7 +8,7 @@
         d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel, IsDesignTimeCreatable=True}"
         Title="Lock In" Height="275" Width="300">
     
-    <Grid Background="#151515">
+    <Grid Background="{StaticResource BlackBackground}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="5*"/>
