@@ -4,9 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:LockIn.ViewModels"
+        xmlns:controls="clr-namespace:LockIn.UserControls"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel, IsDesignTimeCreatable=True}"
         Title="Lock In" Height="275" Width="300"
+        WindowStartupLocation="CenterScreen"
         Icon="./Assets/Helldivers2.ico">
     
     <Grid Background="{StaticResource BlackBackground}">
@@ -31,20 +33,21 @@
             </TextBlock.Foreground>
         </TextBlock>
         
-        <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
-                   FontSize="20" FontWeight="Bold">
-            <TextBlock.Text>
+        <controls:TypewriterTextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      FontSize="20" FontWeight="Bold"
+                                      TimePerCharacter="0:0:0.085">
+            <controls:TypewriterTextBlock.TextToAnimate>
                 <Binding Path="StatusText" Mode="OneWay"/>
-            </TextBlock.Text>
+            </controls:TypewriterTextBlock.TextToAnimate>
             
-            <TextBlock.FontFamily>
+            <controls:TypewriterTextBlock.FontFamily>
                 <StaticResource ResourceKey="FSSinclair"/>
-            </TextBlock.FontFamily>
+            </controls:TypewriterTextBlock.FontFamily>
             
-            <TextBlock.Foreground>
+            <controls:TypewriterTextBlock.Foreground>
                 <StaticResource ResourceKey="SilverForeground"/>
-            </TextBlock.Foreground>
-        </TextBlock>
+            </controls:TypewriterTextBlock.Foreground>
+        </controls:TypewriterTextBlock>
         
         <Border Grid.Row="2" CornerRadius="1" BorderThickness="2"
                 VerticalAlignment="Bottom" Height="80" Width="50" Margin="0 0 0 5">
@@ -63,24 +66,25 @@
             </ToggleButton>
         </Border>
         
-        <TextBlock Grid.Row="3"
+        <controls:TypewriterTextBlock Grid.Row="3"
                    FontSize="14"
                    FontWeight="Bold"
                    HorizontalAlignment="Center"
-                   VerticalAlignment="Top">
+                   VerticalAlignment="Top"
+                   controls:TypewriterTextBlock.TextToAnimate="{Binding LockInText}">
             
-            <TextBlock.Text>
+            <controls:TypewriterTextBlock.Text>
                 <Binding Path="LockInText" Mode="OneWay"/>    
-            </TextBlock.Text>
+            </controls:TypewriterTextBlock.Text>
             
-            <TextBlock.Foreground>
+            <controls:TypewriterTextBlock.Foreground>
                 <StaticResource ResourceKey="WhiteForeground"/>
-            </TextBlock.Foreground>
+            </controls:TypewriterTextBlock.Foreground>
             
-            <TextBlock.FontFamily>
+            <controls:TypewriterTextBlock.FontFamily>
                 <StaticResource ResourceKey="FSSinclair"/>
-            </TextBlock.FontFamily>
-        </TextBlock>
+            </controls:TypewriterTextBlock.FontFamily>
+        </controls:TypewriterTextBlock>
         
     </Grid>
 </Window>
