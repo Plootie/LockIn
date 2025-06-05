@@ -6,7 +6,8 @@
         xmlns:vm="clr-namespace:LockIn.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel, IsDesignTimeCreatable=True}"
-        Title="Lock In" Height="275" Width="300">
+        Title="Lock In" Height="275" Width="300"
+        Icon="./Assets/Helldivers2.ico">
     
     <Grid Background="{StaticResource BlackBackground}">
         <Grid.RowDefinitions>
