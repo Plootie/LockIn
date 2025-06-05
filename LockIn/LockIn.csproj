@@ -22,8 +22,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Assets\FS Sinclair Regular.otf" />
-      <Resource Include="Assets\FS Sinclair Regular.otf" />
+      <None Remove="Assets\*" />
+      <Resource Include="Assets\*" />
     </ItemGroup>
 
 </Project>
