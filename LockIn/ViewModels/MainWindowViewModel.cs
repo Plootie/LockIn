@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Text;
 using System.Windows;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -22,6 +23,7 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly Thread _gameFinder;
     private readonly Thread _cursorClipper;
     private readonly CancellationTokenSource _applicationExitTokenSource = new();
+    private CancellationTokenSource _statusLabelAnimatorTokenSource = new();
 
     public MainWindowViewModel()
     {
@@ -46,21 +48,55 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void UpdateLabel()
     {
+        string textToSet = string.Empty;
         if (!IsLockEnabled)
         {
-            StatusText = "Disabled";
+            textToSet = "Disabled";
             _gameProcess = null;
-            return;
-        }
-
-        if (_gameProcess == null || _gameProcess.HasExited)
-        {
-            StatusText = "Looking for game...";
-            _threadSignaller.Set();
         }
         else
         {
-            StatusText = "Enabled";
+            if (_gameProcess == null || _gameProcess.HasExited)
+            {
+                textToSet = "Looking for game...";
+                _threadSignaller.Set();
+            }
+            else
+            {
+                textToSet = "Enabled";
+            }   
+        }
+        
+        _statusLabelAnimatorTokenSource.Cancel();
+        _statusLabelAnimatorTokenSource = new CancellationTokenSource();
+        _ = TypeWriterEffect(value => StatusText = value, textToSet, TimeSpan.FromMilliseconds(75), _statusLabelAnimatorTokenSource.Token);
+    }
+
+    private Task TypeWriterEffect(Action<string> callback, string newText, TimeSpan timePerChar, CancellationToken ct = default)
+    {
+        try
+        {
+            return Task.Run(() =>
+            {
+                ct.ThrowIfCancellationRequested();
+                callback(string.Empty);
+                StringBuilder bob = new(newText.Length);
+                foreach (char c in newText)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    bob.Append(c);
+                    callback(bob.ToString());
+                    Thread.Sleep(timePerChar);
+                }
+            }, ct);
+        }
+        catch (TaskCanceledException)
+        {
+            return Task.FromCanceled(ct);
+        }
+        catch (OperationCanceledException)
+        {
+            return Task.FromCanceled(ct);
         }
     }
 
@@ -71,7 +107,11 @@ public partial class MainWindowViewModel : ObservableObject
             while (_threadSignaller.WaitOne())
             {
                 if (_applicationExitTokenSource.Token.IsCancellationRequested) return;
-                Process[] processes = Process.GetProcessesByName("helldivers2");
+                string processToFind = "helldivers2";
+#if DEBUG
+                processToFind = "notepad";       
+#endif
+                Process[] processes = Process.GetProcessesByName(processToFind);
                 if (processes.Length > 0)
                 {
                     _gameProcess = processes.First();
@@ -121,14 +161,8 @@ public partial class MainWindowViewModel : ObservableObject
 
     partial void OnIsLockEnabledChanged(bool value)
     {
-        LockInText = value ? "Unlock" : "Lock In";
-    }
-    
-    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
-    {
-        base.OnPropertyChanged(e);
-        
-        if(e.PropertyName != nameof(IsLockEnabled)) return;
+        _ = TypeWriterEffect(strValue => LockInText = strValue, value ? "Unlock" : "Lock In",
+            TimeSpan.FromMilliseconds(80));
         Natives.ClipCursor(IntPtr.Zero);
         UpdateLabel();
     }
