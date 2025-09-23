@@ -23,6 +23,7 @@ public static class Natives
     public static extern IntPtr GetForegroundWindow();
 }
 
+[StructLayout(LayoutKind.Sequential)]
 public struct RECT
 {
     public int Left;

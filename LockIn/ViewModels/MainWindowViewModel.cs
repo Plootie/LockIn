@@ -1,15 +1,17 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Text;
 using System.Windows;
-using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 
 namespace LockIn.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {
+#if RELEASE
+    const string HELLDIVER_PROCESS_NAME = "helldivers2";
+#elif DEBUG
+    const string HELLDIVER_PROCESS_NAME = "notepad";
+#endif
     [ObservableProperty]
     private bool _isLockEnabled;
     
@@ -18,120 +20,115 @@ public partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty] private string _lockInText = "Lock In";
 
-    private Process? _gameProcess;
-    private readonly ManualResetEvent _threadSignaller = new(false);
-    private readonly Thread _gameFinder;
-    private readonly Thread _cursorClipper;
-    private readonly CancellationTokenSource _applicationExitTokenSource = new();
+    private CancellationTokenSource _clipCTS = new();
+    
+    private readonly ImmutableDictionary<StatusEnum, string> _statusTextDictionary = new Dictionary<StatusEnum, string>()
+    {
+        [StatusEnum.Disabled] = "Disabled",
+        [StatusEnum.LookingForGame] = "Looking for game",
+        [StatusEnum.Enabled] = "Enabled",
+    }.ToImmutableDictionary();
 
+    private readonly CancellationTokenSource _applicationExitTokenSource = new();
+    
     public MainWindowViewModel()
     {
-        _gameFinder = new Thread(ThreadFindGame);
-        _gameFinder.Start();
-
-        _cursorClipper = new Thread(ThreadClipToWindow);
-        _cursorClipper.Start();
-        
+        StatusText = _statusTextDictionary[StatusEnum.Disabled];
         Application.Current.Exit += QuitApplication;
     }
 
-    private void QuitApplication(object sender, ExitEventArgs e)
+    private async Task<Process> GetHelldiversProcessAsync(CancellationToken ct = default)
     {
-        _applicationExitTokenSource.Cancel();
-        _gameFinder.Interrupt();
-        _cursorClipper.Interrupt();
-
-        //Theoretically not need since clips are bound to the application, but better safe
-        Natives.ClipCursor(IntPtr.Zero);
+        Process[] processes;
+        while ((processes = Process.GetProcessesByName(HELLDIVER_PROCESS_NAME)).Length < 1)
+        {
+            await Task.Delay(1000, ct).ConfigureAwait(false);
+        }
+        
+        return processes[0];
     }
 
-    private void UpdateLabel()
+    private async Task LockIn(Process proc, CancellationToken ct = default)
     {
-        string textToSet = string.Empty;
-        if (!IsLockEnabled)
+        IntPtr helldiverWindowHandle = proc.MainWindowHandle; //Technically this gets cached anyway but meh
+        while (!ct.IsCancellationRequested && !proc.HasExited)
         {
-            textToSet = "Disabled";
-            _gameProcess = null;
-        }
-        else
-        {
-            if (_gameProcess == null || _gameProcess.HasExited)
+            IntPtr foregroundWindowHandle = Natives.GetForegroundWindow();
+            if (foregroundWindowHandle == helldiverWindowHandle && proc.Responding)
             {
-                textToSet = "Looking for game...";
-                _threadSignaller.Set();
+                if (!Natives.GetWindowRect(foregroundWindowHandle, out RECT windowBounds)) break;
+                Natives.ClipCursor(ref windowBounds);
             }
             else
             {
-                textToSet = "Enabled";
-            }   
-        }
-        
-        StatusText = textToSet;
-    }
-
-    private void ThreadFindGame()
-    {
-        try
-        {
-            while (_threadSignaller.WaitOne())
-            {
-                if (_applicationExitTokenSource.Token.IsCancellationRequested) return;
-                string processToFind = "helldivers2";
-#if DEBUG
-                processToFind = "notepad";       
-#endif
-                Process[] processes = Process.GetProcessesByName(processToFind);
-                if (processes.Length > 0)
-                {
-                    _gameProcess = processes.First();
-                    _gameProcess.EnableRaisingEvents = true;
-                    _gameProcess.Exited += GameExit;
-                    _threadSignaller.Reset();
-                    UpdateLabel();
-                    continue;
-                }
-
-                Thread.Sleep(3000);
+                Natives.ClipCursor(IntPtr.Zero);
             }
+            
+            try{ await Task.Delay(100, ct).ConfigureAwait(false); }
+            catch { break; }
         }
-        catch (ThreadInterruptedException){}
+
+        Natives.ClipCursor(IntPtr.Zero);
+    }
+    
+    private void QuitApplication(object sender, ExitEventArgs e)
+    {
+        _applicationExitTokenSource.Cancel();
+
+        //Theoretically not need since clips are bound to the invoking application, but better safe
+        Natives.ClipCursor(IntPtr.Zero);
     }
 
-    private void ThreadClipToWindow()
+    private void CancelClipping()
     {
-        try
-        {
-            while (!_applicationExitTokenSource.Token.IsCancellationRequested)
-            {
-                if (IsLockEnabled && _gameProcess != null)
-                {
-                    if (Natives.GetForegroundWindow() == _gameProcess.MainWindowHandle)
-                    {
-                        Natives.GetWindowRect(_gameProcess.MainWindowHandle, out RECT windowRect);
-                        Natives.ClipCursor(ref windowRect);
-                    }
-                    else
-                    {
-                        Natives.ClipCursor(IntPtr.Zero);
-                    }
-                }
-                
-                Thread.Sleep(300); 
-            } 
-        }catch(ThreadInterruptedException){}
+        CancellationTokenSource oldCTS = Interlocked.Exchange(ref _clipCTS, new CancellationTokenSource());
+        oldCTS.Cancel();
+        oldCTS.Dispose();
         
+        StatusText = _statusTextDictionary[StatusEnum.Disabled];
     }
 
-    private void GameExit(object? sender, EventArgs e)
+    public void ClipGame()
     {
-        _gameProcess = null;
-        UpdateLabel();
+        StatusText = _statusTextDictionary[StatusEnum.LookingForGame];
+
+        CancellationTokenSource linkedTokenSource =
+            CancellationTokenSource.CreateLinkedTokenSource(_applicationExitTokenSource.Token, _clipCTS.Token);
+        _ = GetHelldiversProcessAsync(linkedTokenSource.Token).ContinueWith(async t =>
+        {
+            //TODO: Report this error
+            if (t.Status != TaskStatus.RanToCompletion) return;
+            Process helldiversProc = t.Result;
+            while (helldiversProc.MainWindowHandle == IntPtr.Zero)
+            {
+                await Task.Delay(250, linkedTokenSource.Token).ConfigureAwait(false);
+            }
+            helldiversProc.Refresh();
+            
+            StatusText = _statusTextDictionary[StatusEnum.Enabled];
+            _ = LockIn(helldiversProc, linkedTokenSource.Token).ContinueWith(x =>
+            {
+                if(IsLockEnabled) ClipGame();
+            });
+        }, linkedTokenSource.Token);
     }
 
     partial void OnIsLockEnabledChanged(bool value)
     {
         LockInText = value ? "Unlock" : "Lock In";
-        Natives.ClipCursor(IntPtr.Zero);
-        UpdateLabel();
+        if (value is not true)
+        {
+            CancelClipping();
+            return;
+        }
+
+        ClipGame();
+    }
+
+    private enum StatusEnum
+    {
+        Disabled,
+        LookingForGame,
+        Enabled
     }
 }
