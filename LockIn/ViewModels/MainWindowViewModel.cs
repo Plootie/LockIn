@@ -39,36 +39,56 @@ public partial class MainWindowViewModel : ObservableObject
 
     private async Task<Process> GetHelldiversProcessAsync(CancellationToken ct = default)
     {
-        Process[] processes;
-        while ((processes = Process.GetProcessesByName(HELLDIVER_PROCESS_NAME)).Length < 1)
+        try
         {
-            await Task.Delay(1000, ct).ConfigureAwait(false);
+            Process[] processes;
+            while ((processes = Process.GetProcessesByName(HELLDIVER_PROCESS_NAME)).Length < 1)
+            {
+                await Task.Delay(1000, ct).ConfigureAwait(false);
+            }
+
+            return processes[0];
         }
-        
-        return processes[0];
+        catch (Exception e)
+        {
+            MessageBox.Show(
+                $"The code has undemocratically crashed!\nPlease report this violation to your democracy officer:\n\n{e}",
+                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            throw;
+        }
     }
 
     private async Task LockIn(Process proc, CancellationToken ct = default)
     {
-        IntPtr helldiverWindowHandle = proc.MainWindowHandle; //Technically this gets cached anyway but meh
-        while (!ct.IsCancellationRequested && !proc.HasExited)
+        try
         {
-            IntPtr foregroundWindowHandle = Natives.GetForegroundWindow();
-            if (foregroundWindowHandle == helldiverWindowHandle && proc.Responding)
+            IntPtr helldiverWindowHandle = proc.MainWindowHandle; //Technically this gets cached anyway but meh
+            while (!ct.IsCancellationRequested && !proc.HasExited)
             {
-                if (!Natives.GetWindowRect(foregroundWindowHandle, out RECT windowBounds)) break;
-                Natives.ClipCursor(ref windowBounds);
-            }
-            else
-            {
-                Natives.ClipCursor(IntPtr.Zero);
-            }
+                IntPtr foregroundWindowHandle = Natives.GetForegroundWindow();
+                if (foregroundWindowHandle == helldiverWindowHandle && proc.Responding)
+                {
+                    if (!Natives.GetWindowRect(foregroundWindowHandle, out RECT windowBounds)) break;
+                    Natives.ClipCursor(ref windowBounds);
+                }
+                else
+                {
+                    Natives.ClipCursor(IntPtr.Zero);
+                }
             
-            try{ await Task.Delay(100, ct).ConfigureAwait(false); }
-            catch { break; }
-        }
+                try{ await Task.Delay(100, ct).ConfigureAwait(false); }
+                catch { break; }
+            }
 
-        Natives.ClipCursor(IntPtr.Zero);
+            Natives.ClipCursor(IntPtr.Zero);
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show(
+                $"The code has undemocratically crashed!\nPlease report this violation to your democracy officer:\n\n{e}",
+                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            throw;
+        }
     }
     
     private void QuitApplication(object sender, ExitEventArgs e)
@@ -93,11 +113,17 @@ public partial class MainWindowViewModel : ObservableObject
         StatusText = _statusTextDictionary[StatusEnum.LookingForGame];
 
         CancellationTokenSource linkedTokenSource =
+            
             CancellationTokenSource.CreateLinkedTokenSource(_applicationExitTokenSource.Token, _clipCTS.Token);
         _ = GetHelldiversProcessAsync(linkedTokenSource.Token).ContinueWith(async t =>
         {
-            //TODO: Report this error
-            if (t.Status != TaskStatus.RanToCompletion) return;
+            if (t.Status != TaskStatus.RanToCompletion)
+            {
+                MessageBox.Show(
+                    $"The code has undemocratically crashed!\nPlease report this violation to your democracy officer:\n\n{t.Exception}",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
             Process helldiversProc = t.Result;
             while (helldiversProc.MainWindowHandle == IntPtr.Zero)
             {
@@ -108,6 +134,7 @@ public partial class MainWindowViewModel : ObservableObject
             StatusText = _statusTextDictionary[StatusEnum.Enabled];
             _ = LockIn(helldiversProc, linkedTokenSource.Token).ContinueWith(x =>
             {
+                if(x.Status != TaskStatus.RanToCompletion) return;
                 if(IsLockEnabled) ClipGame();
             });
         }, linkedTokenSource.Token);
