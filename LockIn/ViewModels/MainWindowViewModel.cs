@@ -51,9 +51,12 @@ public partial class MainWindowViewModel : ObservableObject
         }
         catch (Exception e)
         {
-            MessageBox.Show(
-                $"The code has undemocratically crashed!\nPlease report this violation to your democracy officer:\n\n{e}",
-                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            if (e is not OperationCanceledException)
+            {
+                MessageBox.Show(
+                    $"The code has undemocratically crashed!\nPlease report this violation to your democracy officer:\n\n{e}",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
             throw;
         }
     }
