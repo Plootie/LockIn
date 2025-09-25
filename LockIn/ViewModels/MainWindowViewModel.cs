@@ -130,7 +130,9 @@ public partial class MainWindowViewModel : ObservableObject
             Process helldiversProc = t.Result;
             while (helldiversProc.MainWindowHandle == IntPtr.Zero)
             {
+                MessageBox.Show("Proc found but now window handle. Waiting...");
                 await Task.Delay(250, linkedTokenSource.Token).ConfigureAwait(false);
+                helldiversProc.Refresh();
             }
             helldiversProc.Refresh();
             
